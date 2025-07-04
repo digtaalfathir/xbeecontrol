@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XBee Web Control - Pico W</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #ccc;
+      }
+      .yellow {
+        background-color: #ffd700;
+      }
+      .green {
+        background-color: #2ecc71;
+        color: white;
+      }
+      .button {
+        padding: 10px 20px;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      .delay {
+        background-color: #e74c3c;
+      }
+      .progress {
+        background-color: #5d6dff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="home">
+      <table>
+        <thead>
+          <tr>
+            <th>SEQ</th>
+            <th>MODEL</th>
+            <th>SFX</th>
+            <th>COLOUR</th>
+            <th>FR</th>
+            <th>RR</th>
+            <th>CONFIRM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="yellow">
+            <td>864</td>
+            <td>SUV</td>
+            <td>BJ</td>
+            <td>XM2</td>
+            <td><button class="button green">OK</button></td>
+            <td><button class="button green">OK</button></td>
+            <td>
+              <button class="button progress" onclick="goToDetail('d1')">ON PROGRESS</button>
+            </td>
+          </tr>
+          <tr class="green">
+            <td>865</td>
+            <td>BMPV</td>
+            <td>6G</td>
+            <td>3Q3</td>
+            <td><button class="button green">OK</button></td>
+            <td><button class="button green">OK</button></td>
+            <td>
+              <button class="button progress" onclick="goToDetail('d2')">ON PROGRESS</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="detail" style="display: none">
+      <h2>Halaman Detail</h2>
+      <p>Menunggu proses...</p>
+      <button onclick="goBack()">Kembali</button>
+    </div>
+
+    <script>
+      const PICO_IP = "http://192.168.1.48"; // otomatis ambil IP saat ini
+
+      function goToDetail(pin) {
+        fetch(`${PICO_IP}/led/on?pin=${pin}`);
+        sessionStorage.setItem("lastPin", pin);
+        location.hash = `detail`;
+      }
+
+      function goBack() {
+        location.hash = "";
+      }
+
+      function updateView() {
+        const isDetail = location.hash.startsWith("#detail");
+        const home = document.getElementById("home");
+        const detail = document.getElementById("detail");
+
+        if (isDetail) {
+          home.style.display = "none";
+          detail.style.display = "block";
+        } else {
+          home.style.display = "block";
+          detail.style.display = "none";
+
+          const pin = sessionStorage.getItem("lastPin");
+          if (pin) {
+            fetch(`${PICO_IP}/led/off?pin=${pin}`);
+            sessionStorage.removeItem("lastPin");
+          }
+        }
+      }
+
+      window.addEventListener("load", updateView);
+      window.addEventListener("hashchange", updateView);
+    </script>
+  </body>
+</html>
